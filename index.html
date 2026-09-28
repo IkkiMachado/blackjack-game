@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blackjack 21 - Cassino Royale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Barra Superior / HUD -->
+    <header class="top-nav">
+      <div class="brand">
+        <span class="brand-suit">♠</span>
+        <span class="brand-title">BLACKJACK <strong>21</strong></span>
+        <span class="brand-suit red">♦</span>
+      </div>
+
+      <div class="hud-stats">
+        <div class="stat-pill balance-pill">
+          <span class="stat-label">BANCA:</span>
+          <span class="stat-value" id="balance-display">$1.000</span>
+        </div>
+        <div class="stat-pill current-bet-pill">
+          <span class="stat-label">APOSTA TOTAL:</span>
+          <span class="stat-value" id="total-bet-display">$0</span>
+        </div>
+      </div>
+
+      <div class="hud-actions">
+        <button id="sound-btn" class="icon-btn" title="Alternar Som" aria-label="Som">
+          <span id="sound-icon">🔊</span>
+        </button>
+        <button id="rules-btn" class="icon-btn" title="Regras do Jogo" aria-label="Regras">
+          <span>📜</span>
+        </button>
+        <button id="reset-bankroll-btn" class="btn-text-small" title="Recarregar fichas se zerar">
+          + Recarregar
+        </button>
+      </div>
+    </header>
+
+    <!-- Mesa de Cassino -->
+    <main class="table-outer">
+      <div class="table-rail">
+        <div class="table-felt">
+          <!-- Marcas clássicas do feltro -->
+          <div class="felt-markings">
+            <div class="felt-arc"></div>
+            <div class="felt-text-main">BLACKJACK PAYS 3 TO 2</div>
+            <div class="felt-text-sub">Dealer must stand on 17 and must draw to 16 • Insurance pays 2 to 1</div>
+          </div>
+
+          <!-- Sapata de Cartas (Shoe) no topo direito -->
+          <div class="deck-shoe" id="deck-shoe" title="Sapata com 6 Baralhos">
+            <div class="shoe-card-stack"></div>
+            <span class="shoe-label" id="deck-count-display">312 cartas</span>
+          </div>
+
+          <!-- Área do Dealer -->
+          <section class="dealer-area">
+            <div class="hand-header">
+              <span class="dealer-badge">DEALER</span>
+              <div class="score-badge" id="dealer-score-badge">
+                <span id="dealer-score">--</span>
+              </div>
+            </div>
+            <div class="cards-wrapper" id="dealer-cards">
+              <!-- Cartas do Dealer renderizadas aqui -->
+            </div>
+          </section>
+
+          <!-- Banner de Mensagens Centrais -->
+          <div class="table-center">
+            <div class="announcement-banner" id="announcement-banner">
+              <span id="announcement-text">Faça sua aposta para começar</span>
+            </div>
+          </div>
+
+          <!-- Área do Jogador (Suporta Split / 2 Mãos) -->
+          <section class="player-area">
+            <div class="player-hands-container" id="player-hands-container">
+              <!-- As mãos do jogador (Hand 1 e Hand 2 no split) serão injetadas dinamicamente -->
+            </div>
+          </section>
+
+          <!-- Área de Apostas / Círculos de Fichas -->
+          <div class="betting-zone" id="betting-zone">
+            <div class="bet-spot" id="bet-spot">
+              <div class="bet-spot-circle">
+                <span class="bet-spot-title">APOSTA</span>
+                <span class="bet-spot-amount" id="bet-spot-amount">$0</span>
+                <div class="chip-stack-visual" id="chip-stack-visual"></div>
+              </div>
+            </div>
+
+            <!-- Fichas de Cassino -->
+            <div class="chip-rack">
+              <button class="chip chip-10" data-value="10" title="Apostar $10">
+                <span class="chip-inner">10</span>
+              </button>
+              <button class="chip chip-25" data-value="25" title="Apostar $25">
+                <span class="chip-inner">25</span>
+              </button>
+              <button class="chip chip-50" data-value="50" title="Apostar $50">
+                <span class="chip-inner">50</span>
+              </button>
+              <button class="chip chip-100" data-value="100" title="Apostar $100">
+                <span class="chip-inner">100</span>
+              </button>
+              <button class="chip chip-500" data-value="500" title="Apostar $500">
+                <span class="chip-inner">500</span>
+              </button>
+            </div>
+
+            <!-- Ações de Aposta -->
+            <div class="bet-quick-actions">
+              <button id="rebet-btn" class="btn-subtle" title="Repetir última aposta" disabled>
+                Repetir
+              </button>
+              <button id="clear-bet-btn" class="btn-subtle" title="Remover aposta atual">
+                Limpar
+              </button>
+              <button id="double-bet-btn" class="btn-subtle" title="Dobrar a aposta atual">
+                2x Aposta
+              </button>
+              <button id="all-in-btn" class="btn-subtle" title="Apostar tudo">
+                All-In
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Controle de Jogo (Hit, Stand, Double, Split, Deal) -->
+      <footer class="controls-bar">
+        <button id="deal-btn" class="btn btn-primary btn-deal">
+          <span class="btn-icon">▶</span> DISTRIBUIR
+        </button>
+
+        <div class="in-game-buttons" id="in-game-buttons">
+          <button id="hit-btn" class="btn btn-action btn-hit" disabled>
+            <span class="btn-icon">+</span> PEDIR (HIT)
+          </button>
+          <button id="stand-btn" class="btn btn-action btn-stand" disabled>
+            <span class="btn-icon">✋</span> PARAR (STAND)
+          </button>
+          <button id="double-btn" class="btn btn-action btn-double" disabled>
+            <span class="btn-icon">2×</span> DOBRAR
+          </button>
+          <button id="split-btn" class="btn btn-action btn-split" disabled>
+            <span class="btn-icon">✂</span> DIVIDIR (SPLIT)
+          </button>
+        </div>
+      </footer>
+    </main>
+
+    <!-- Modal de Regras -->
+    <div class="modal-backdrop" id="rules-modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>Regras do Blackjack 21</h2>
+          <button id="close-rules-btn" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="rule-block">
+            <h3>🎯 Objetivo</h3>
+            <p>Obtenha uma mão com pontuação superior à do Dealer sem ultrapassar <strong>21 pontos</strong>.</p>
+          </div>
+          <div class="rule-block">
+            <h3>🃏 Valores das Cartas</h3>
+            <ul>
+              <li><strong>2 a 10:</strong> Valem seu valor numérico de face.</li>
+              <li><strong>Valete (J), Dama (Q), Rei (K):</strong> Valem 10 pontos cada.</li>
+              <li><strong>Ás (A):</strong> Vale 11 ou 1 ponto (o jogo ajusta automaticamente para a melhor combinação).</li>
+            </ul>
+          </div>
+          <div class="rule-block">
+            <h3>⚡ Ações Especiais</h3>
+            <ul>
+              <li><strong>Dobrar (Double Down):</strong> Dobra o valor da sua aposta, compra exatamente mais 1 carta e finaliza o seu turno.</li>
+              <li><strong>Dividir (Split):</strong> Se as suas duas cartas iniciais tiverem o mesmo valor ou figura, você pode dividi-las em duas mãos separadas (requer igualar a aposta original). Cada mão é jogada individualmente!</li>
+            </ul>
+          </div>
+          <div class="rule-block">
+            <h3>💰 Pagamentos</h3>
+            <ul>
+              <li><strong>Blackjack Natural (Ás + 10 nas duas primeiras cartas):</strong> Paga 3 para 2 (150%).</li>
+              <li><strong>Vitória Normal:</strong> Paga 1 para 1 (100%).</li>
+              <li><strong>Empate (Push):</strong> Sua aposta é devolvida integralmente.</li>
+              <li><strong>Regra do Dealer:</strong> O dealer é obrigado a comprar cartas até somar 17 ou mais.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="got-it-btn" class="btn btn-primary">Entendi!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
